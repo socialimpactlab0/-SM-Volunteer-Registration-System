@@ -1,0 +1,12 @@
+# clasp project binding / auth (do not commit)
+.clasp.json
+.clasprc.json
+
+# Node
+node_modules/
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/

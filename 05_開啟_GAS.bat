@@ -1,9 +1,26 @@
 @echo off
-chcp 65001 >nul
+setlocal
 cd /d "%~dp0"
+title Open GAS
+
 if not exist ".clasp.json" (
-  echo [錯誤] 找不到 .clasp.json。
+  echo [ERROR] .clasp.json was not found.
   pause
   exit /b 1
 )
-call npx clasp open-script
+
+if not exist "node_modules\.bin\clasp.cmd" (
+  echo [ERROR] CLASP is not installed.
+  pause
+  exit /b 1
+)
+
+call "node_modules\.bin\clasp.cmd" open-script
+if errorlevel 1 (
+  echo [ERROR] Could not open the GAS project.
+  pause
+  exit /b 1
+)
+
+pause
+endlocal

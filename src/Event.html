@@ -3,37 +3,52 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>活動報名</title>
+  <title>義工活動</title>
   <style>
-    :root{--green:#17843f;--green2:#2ea65a;--light:#eef9f0;--line:#d9e8dc;--text:#172018;--muted:#687269;--red:#d93025;--orange:#e36a13}
-    *{box-sizing:border-box} body{margin:0;background:#f6f8f6;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",Arial,sans-serif}
-    .wrap{max-width:680px;margin:0 auto;min-height:100vh;background:#fff;padding-bottom:34px}
-    header{padding:28px 20px 20px;background:linear-gradient(180deg,#ecf9ef,#fff);text-align:center;border-bottom:1px solid var(--line)}
-    header h1{margin:0;color:#0c6530;font-size:34px;letter-spacing:1px} header p{margin:8px 0 0;color:var(--muted);font-size:17px}
-    main{padding:18px}.card{border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-bottom:16px;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.04)}
-    .title{background:var(--light);padding:17px 18px;font-size:28px;font-weight:800;color:#0b5e2d}
-    .info{padding:16px 18px}.row{display:grid;grid-template-columns:92px 1fr;gap:10px;padding:7px 0;font-size:18px}.label{color:#465047}.value{font-weight:650}.short{color:var(--orange);font-weight:800}.ended{color:var(--muted);font-weight:800}.full{color:var(--red);font-weight:800}
-    .section-title{padding:13px 18px;background:var(--light);font-size:21px;font-weight:800;color:#0b5e2d}.list{padding:8px 18px 14px}.person{padding:10px 0;border-bottom:1px solid #edf1ee;font-size:18px}.person:last-child{border-bottom:none}.empty{color:var(--muted);padding:12px 0}
-    .form{padding:16px 18px}.field{margin-bottom:12px}.field label{display:block;margin-bottom:6px;font-weight:700}.field input{width:100%;font-size:18px;padding:13px 14px;border:1px solid #cbd8ce;border-radius:12px;outline:none}.field input:focus{border-color:var(--green)}
-    .btn{width:100%;border:0;border-radius:13px;padding:15px;font-size:21px;font-weight:800;cursor:pointer;margin-top:8px}.primary{background:var(--green2);color:#fff}.secondary{background:#fff;color:#0b6b33;border:2px solid var(--green2)}.danger{background:#fff0f0;color:var(--red);border:2px solid #e96d68}.btn:disabled{opacity:.55;cursor:not-allowed}
-    .notice{margin:12px 0 0;padding:12px;border-radius:12px;background:#f3f6f3;color:#5f675f;text-align:center}.success{background:#e8f7ec;color:#126a35}.error{background:#fff0ef;color:#b3261e}.wait{background:#fff5e8;color:#8a4b00}
-    .mybox{padding:18px;text-align:center}.mybox .big{font-size:24px;font-weight:800;color:#0b6b33;margin-bottom:6px}.mybox .sub{color:var(--muted);font-size:17px}.mybox.waiting .big{color:#a45d00}
-    .small-link{display:block;text-align:center;margin-top:14px;color:#0b6b33;text-decoration:underline;cursor:pointer}.hide{display:none!important}
-    .footer-note{text-align:center;color:#737b74;font-size:14px;margin:18px 0 4px}
-    @media(max-width:430px){header h1{font-size:30px}.title{font-size:25px}.row{grid-template-columns:82px 1fr;font-size:17px}}
+    :root{--green:#23894a;--green2:#35a85d;--light:#eef8f0;--line:#dce8df;--text:#182019;--muted:#6b746d;--red:#c93830;--orange:#df6a18}
+    *{box-sizing:border-box} body{margin:0;background:#f5f7f5;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",Arial,sans-serif}
+    .wrap{max-width:720px;margin:0 auto;min-height:100vh;background:#fff}
+    header{padding:26px 20px 20px;text-align:center;background:linear-gradient(180deg,#edf9ef,#fff);border-bottom:1px solid var(--line)}
+    header h1{margin:0;color:#0c6530;font-size:32px} header p{margin:7px 0 0;color:var(--muted);font-size:16px}
+    main{padding:16px}
+    .notice{padding:13px 14px;border-radius:12px;background:#f2f5f2;color:#5e675f;text-align:center;margin-bottom:14px}.error{background:#fff0ef;color:#b3261e}.success{background:#e8f7ec;color:#126a35}.wait{background:#fff4e5;color:#8e5000}
+    .activity{border:1px solid var(--line);border-radius:16px;margin-bottom:14px;overflow:hidden;background:#fff;box-shadow:0 2px 9px rgba(0,0,0,.04)}
+    .activity-head{padding:15px 16px;background:var(--light);display:flex;justify-content:space-between;gap:12px;align-items:center}
+    .activity-title{font-size:22px;font-weight:800;color:#0d5f2f}.status{font-size:14px;font-weight:800;white-space:nowrap}
+    .activity-body{padding:14px 16px}.meta{display:grid;grid-template-columns:68px 1fr;gap:8px;padding:4px 0;font-size:16px}.meta .k{color:var(--muted)}
+    .count{display:flex;justify-content:space-between;gap:10px;margin-top:10px;font-size:16px}.short{color:var(--orange);font-weight:800}.full{color:var(--red);font-weight:800}
+    .btn{width:100%;border:0;border-radius:11px;padding:13px 14px;font-size:18px;font-weight:800;cursor:pointer}.primary{background:var(--green2);color:#fff}.secondary{background:#fff;color:#176d39;border:2px solid var(--green2)}.danger{background:#fff1f0;color:var(--red);border:2px solid #e7807a}.btn:disabled{opacity:.55}
+    .detail-top{display:flex;align-items:center;gap:10px;margin-bottom:14px}.back{width:auto;padding:9px 13px;font-size:16px}
+    .card{border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:14px}.card-title{background:var(--light);padding:13px 16px;font-size:20px;font-weight:800;color:#0d5f2f}.card-body{padding:15px 16px}
+    .detail-title{font-size:25px;font-weight:800;color:#0d5f2f;margin-bottom:12px}.row{display:grid;grid-template-columns:86px 1fr;gap:8px;padding:6px 0;font-size:17px}.label{color:var(--muted)}.value{font-weight:650}
+    .person{padding:9px 0;border-bottom:1px solid #edf1ee;font-size:17px}.person:last-child{border-bottom:none}.empty{color:var(--muted);padding:7px 0}
+    .field{margin-bottom:12px}.field label{display:block;margin-bottom:5px;font-weight:700}.field input{width:100%;padding:12px 13px;border:1px solid #ccd8cf;border-radius:10px;font-size:17px}
+    .small-link{display:block;text-align:center;color:#176d39;text-decoration:underline;margin-top:13px;cursor:pointer}.hide{display:none!important}
+    .mybox{text-align:center;padding:4px}.mybox .big{font-size:23px;font-weight:800;color:#176d39;margin-bottom:5px}.mybox .sub{color:var(--muted);font-size:16px}
+    .footer{text-align:center;color:#747c76;font-size:13px;padding:12px 0 26px}
+    @media(max-width:430px){header h1{font-size:29px}.activity-title{font-size:20px}.detail-title{font-size:23px}.row{grid-template-columns:78px 1fr;font-size:16px}}
   </style>
 </head>
 <body>
 <div class="wrap">
-  <header><h1>活動報名</h1><p>這裡才是真正報名的地方</p></header>
+  <header><h1>義工活動</h1><p>選擇活動即可查看名單、報名或取消</p></header>
   <main>
-    <div id="loading" class="notice">載入活動資料中…</div>
-    <div id="fatal" class="notice error hide"></div>
+    <div id="loading" class="notice">載入活動中…</div>
+    <div id="error" class="notice error hide"></div>
 
-    <div id="content" class="hide">
-      <section class="card">
-        <div class="title" id="eventTitle"></div>
-        <div class="info">
+    <section id="listView" class="hide">
+      <div id="activityList"></div>
+      <div id="noActivities" class="notice hide">目前沒有開放中的活動。</div>
+    </section>
+
+    <section id="detailView" class="hide">
+      <div class="detail-top">
+        <button class="btn secondary back" onclick="showList()">← 返回活動列表</button>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <div id="detailTitle" class="detail-title"></div>
           <div class="row"><div class="label">集合</div><div class="value" id="meet"></div></div>
           <div class="row"><div class="label">活動</div><div class="value" id="time"></div></div>
           <div class="row"><div class="label">地點</div><div class="value" id="place"></div></div>
@@ -44,80 +59,132 @@
           <div class="row"><div class="label">狀態</div><div class="value" id="status"></div></div>
           <div class="row" id="descRow"><div class="label">說明</div><div class="value" id="desc"></div></div>
         </div>
-      </section>
+      </div>
 
-      <section class="card">
-        <div class="section-title">目前名單（<span id="rosterCount">0</span> 人）</div>
-        <div class="list" id="roster"></div>
-      </section>
+      <div class="card">
+        <div class="card-title">目前名單（<span id="rosterCount">0</span> 人）</div>
+        <div class="card-body" id="roster"></div>
+      </div>
 
-      <section class="card hide" id="waitCard">
-        <div class="section-title">候補名單（<span id="waitCount">0</span> 人）</div>
-        <div class="list" id="waitlist"></div>
-      </section>
+      <div class="card hide" id="waitCard">
+        <div class="card-title">候補名單（<span id="waitCount">0</span> 人）</div>
+        <div class="card-body" id="waitlist"></div>
+      </div>
 
-      <section class="card" id="signupCard">
-        <div class="section-title">我要報名</div>
-        <div class="form">
-          <div class="field"><label for="name">姓名</label><input id="name" autocomplete="name" placeholder="請輸入姓名"></div>
-          <div class="field"><label for="phone">手機號碼</label><input id="phone" inputmode="tel" autocomplete="tel" placeholder="例如：0912345678"></div>
+      <div class="card" id="signupCard">
+        <div class="card-title">我要報名</div>
+        <div class="card-body">
+          <div class="field"><label>姓名</label><input id="name" autocomplete="name" placeholder="請輸入姓名"></div>
+          <div class="field"><label>手機號碼</label><input id="phone" inputmode="tel" autocomplete="tel" placeholder="例如：0912345678"></div>
           <button id="signupBtn" class="btn primary" onclick="signup()">我要報名</button>
           <div id="signupMsg" class="notice hide"></div>
-          <span class="small-link" onclick="showLookup()">我已經報名，要查詢／取消</span>
+          <span class="small-link" onclick="showLookup()">我已報名，要查詢／取消</span>
         </div>
-      </section>
+      </div>
 
-      <section class="card hide" id="lookupCard">
-        <div class="section-title">查詢我的報名</div>
-        <div class="form">
-          <div class="field"><label for="lookupPhone">手機號碼</label><input id="lookupPhone" inputmode="tel" placeholder="輸入報名時的手機號碼"></div>
+      <div class="card hide" id="lookupCard">
+        <div class="card-title">查詢我的報名</div>
+        <div class="card-body">
+          <div class="field"><label>手機號碼</label><input id="lookupPhone" inputmode="tel" placeholder="輸入報名時的手機號碼"></div>
           <button class="btn secondary" onclick="lookupMine()">查詢</button>
-          <span class="small-link" onclick="hideLookup()">返回報名</span>
+          <span class="small-link" onclick="hideLookup()">返回</span>
         </div>
-      </section>
+      </div>
 
-      <section class="card hide" id="myCard">
-        <div class="section-title">你的狀態</div>
-        <div class="mybox" id="myBox">
+      <div class="card hide" id="myCard">
+        <div class="card-title">你的狀態</div>
+        <div class="card-body mybox">
           <div class="big" id="myStatus"></div>
           <div class="sub" id="myName"></div>
-          <button class="btn danger" onclick="cancelMine()">取消報名</button>
+          <button class="btn danger" style="margin-top:14px" onclick="cancelMine()">取消報名</button>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <button class="btn secondary" onclick="goBackToLine()">返回 LINE 群組</button>
-      <div class="footer-note">報名或取消後，名額會立即更新</div>
-    </div>
+    <div class="footer">報名或取消後，人數會立即更新</div>
   </main>
 </div>
+
 <script>
-  const EVENT_ID = <?!= JSON.stringify(eventId) ?>;
+  const DIRECT_EVENT_ID = <?!= JSON.stringify(eventId) ?>;
+  let currentEventId = '';
   let currentPhone = '';
-  let currentData = null;
+  let currentEvent = null;
 
   document.addEventListener('DOMContentLoaded', () => {
-    if (!EVENT_ID) return fatal('連結缺少活動編號。');
-    currentPhone = localStorage.getItem('volunteer_phone_' + EVENT_ID) || '';
-    load(currentPhone);
+    google.script.run
+      .withSuccessHandler(events => {
+        document.getElementById('loading').classList.add('hide');
+        renderActivityList(events || []);
+        if (DIRECT_EVENT_ID) openEvent(DIRECT_EVENT_ID);
+        else showList();
+      })
+      .withFailureHandler(showError)
+      .getPublicEvents();
   });
 
-  function load(phone='') {
-    document.getElementById('loading').classList.remove('hide');
-    google.script.run
-      .withSuccessHandler(render)
-      .withFailureHandler(err => fatal(err.message || err))
-      .getEventPageData(EVENT_ID, phone);
+  function renderActivityList(events) {
+    const box = document.getElementById('activityList');
+    box.innerHTML = '';
+    document.getElementById('noActivities').classList.toggle('hide', events.length > 0);
+
+    events.forEach(e => {
+      const card = document.createElement('div');
+      card.className = 'activity';
+      const statusText = e.isFull ? (e.waitCount ? `已額滿｜候補 ${e.waitCount} 人` : '已額滿，可候補') : `尚缺 ${e.shortage} 人`;
+      const statusClass = e.isFull ? 'full' : 'short';
+      card.innerHTML = `
+        <div class="activity-head">
+          <div class="activity-title">${esc(e.dateText)}（${esc(e.weekday)}） ${esc(e.name)}</div>
+          <div class="status ${statusClass}">${esc(statusText)}</div>
+        </div>
+        <div class="activity-body">
+          <div class="meta"><div class="k">集合</div><div>${esc(e.meetTime || '—')}</div></div>
+          <div class="meta"><div class="k">地點</div><div>${esc(e.place || '—')}</div></div>
+          <div class="count"><span>已報 ${e.positiveCount} / ${e.need} 人</span><span class="${statusClass}">${esc(statusText)}</span></div>
+          <button class="btn primary" style="margin-top:12px">報名／查看</button>
+        </div>`;
+      card.querySelector('button').onclick = () => openEvent(e.eventId);
+      box.appendChild(card);
+    });
   }
 
-  function render(data) {
-    document.getElementById('loading').classList.add('hide');
-    if (!data || !data.ok) return fatal((data && data.message) || '無法載入活動。');
-    currentData = data;
+  function showList() {
+    currentEventId = '';
+    currentPhone = '';
+    currentEvent = null;
+    document.getElementById('detailView').classList.add('hide');
+    document.getElementById('listView').classList.remove('hide');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  function openEvent(eventId) {
+    currentEventId = eventId;
+    currentPhone = localStorage.getItem('volunteer_phone_' + eventId) || '';
+    document.getElementById('listView').classList.add('hide');
+    document.getElementById('detailView').classList.add('hide');
+    document.getElementById('loading').classList.remove('hide');
+    google.script.run
+      .withSuccessHandler(data => {
+        document.getElementById('loading').classList.add('hide');
+        if (!data || !data.ok) {
+          showError((data && data.message) || '找不到活動。');
+          showList();
+          return;
+        }
+        renderDetail(data);
+      })
+      .withFailureHandler(showError)
+      .getEventPageData(eventId, currentPhone);
+  }
+
+  function renderDetail(data) {
+    currentEvent = data.event;
     const e = data.event;
-    document.getElementById('content').classList.remove('hide');
-    document.getElementById('eventTitle').textContent = `${e.dateText}（${e.weekday}） ${e.name}`;
+    document.getElementById('detailView').classList.remove('hide');
+    document.getElementById('detailTitle').textContent = `${e.dateText}（${e.weekday}） ${e.name}`;
     document.getElementById('meet').textContent = e.meetTime || '—';
-    document.getElementById('time').textContent = [e.startTime, e.endTime].filter(Boolean).join('–') || '—';
+    document.getElementById('time').textContent = [e.startTime,e.endTime].filter(Boolean).join('–') || '—';
     document.getElementById('place').textContent = e.place || '—';
     setOptional('addressRow','address',e.address);
     setOptional('contactRow','contact',e.contact);
@@ -127,91 +194,118 @@
     document.getElementById('count').textContent = e.positiveCount;
 
     const st = document.getElementById('status');
-    if (e.status === '已結束') { st.textContent='已結束'; st.className='value ended'; }
-    else if (e.status !== '開放') { st.textContent=e.status; st.className='value ended'; }
-    else if (e.isFull) { st.textContent = e.waitCount ? `已額滿｜候補 ${e.waitCount} 人` : '已額滿，可候補'; st.className='value full'; }
-    else { st.textContent=`尚缺 ${e.shortage} 人`; st.className='value short'; }
+    if (e.isFull) { st.textContent = e.waitCount ? `已額滿｜候補 ${e.waitCount} 人` : '已額滿，可候補'; st.className='value full'; }
+    else { st.textContent = `尚缺 ${e.shortage} 人`; st.className='value short'; }
 
-    renderNames('roster', data.roster);
-    document.getElementById('rosterCount').textContent = data.roster.length;
-    if (data.waitlist.length) {
+    renderNames('roster',data.roster);
+    document.getElementById('rosterCount').textContent=data.roster.length;
+
+    if(data.waitlist.length){
       document.getElementById('waitCard').classList.remove('hide');
-      document.getElementById('waitCount').textContent = data.waitlist.length;
-      renderNames('waitlist', data.waitlist);
-    } else document.getElementById('waitCard').classList.add('hide');
+      document.getElementById('waitCount').textContent=data.waitlist.length;
+      renderNames('waitlist',data.waitlist);
+    }else{
+      document.getElementById('waitCard').classList.add('hide');
+    }
 
-    if (data.my) showMine(data.my);
+    if(data.my) showMine(data.my);
     else showSignup(e);
+
+    window.scrollTo({top:0,behavior:'smooth'});
   }
 
-  function showSignup(e) {
+  function showSignup(e){
     document.getElementById('myCard').classList.add('hide');
     document.getElementById('lookupCard').classList.add('hide');
     document.getElementById('signupCard').classList.remove('hide');
-    const btn = document.getElementById('signupBtn');
-    btn.disabled = !e.canRegister;
-    btn.textContent = !e.canRegister ? (e.status === '已結束' ? '活動已結束' : '目前未開放報名') : (e.isFull ? '我要候補' : '我要報名');
+    const btn=document.getElementById('signupBtn');
+    btn.disabled=!e.canRegister;
+    btn.textContent=e.isFull?'我要候補':'我要報名';
   }
 
-  function showMine(my) {
-    currentPhone = my.phone;
-    localStorage.setItem('volunteer_phone_' + EVENT_ID, currentPhone);
+  function showMine(my){
+    currentPhone=my.phone;
+    localStorage.setItem('volunteer_phone_'+currentEventId,currentPhone);
     document.getElementById('signupCard').classList.add('hide');
     document.getElementById('lookupCard').classList.add('hide');
     document.getElementById('myCard').classList.remove('hide');
-    document.getElementById('myStatus').textContent = my.status === '候補' ? '候補中' : '已報名';
-    document.getElementById('myName').textContent = `姓名：${my.name}`;
-    document.getElementById('myBox').classList.toggle('waiting', my.status === '候補');
+    document.getElementById('myStatus').textContent=my.status==='候補'?'候補中':'已報名';
+    document.getElementById('myName').textContent='姓名：'+my.name;
   }
 
-  function signup() {
-    const name = document.getElementById('name').value.trim();
-    const phone = document.getElementById('phone').value.trim();
-    if (!name) return msg('signupMsg','請輸入姓名。','error');
-    if (!phone) return msg('signupMsg','請輸入手機號碼。','error');
-    const btn = document.getElementById('signupBtn');
-    btn.disabled = true; btn.textContent='處理中…';
+  function signup(){
+    const name=document.getElementById('name').value.trim();
+    const phone=document.getElementById('phone').value.trim();
+    if(!name) return showMsg('請輸入姓名。','error');
+    if(!phone) return showMsg('請輸入手機號碼。','error');
+    const btn=document.getElementById('signupBtn');
+    btn.disabled=true;btn.textContent='處理中…';
+
     google.script.run
-      .withSuccessHandler(r => {
-        currentPhone = phone.replace(/\D/g,'');
-        localStorage.setItem('volunteer_phone_' + EVENT_ID, currentPhone);
-        msg('signupMsg', r.message, r.status === '候補' ? 'wait' : 'success');
-        setTimeout(() => load(currentPhone), 350);
+      .withSuccessHandler(r=>{
+        currentPhone=phone.replace(/\D/g,'');
+        localStorage.setItem('volunteer_phone_'+currentEventId,currentPhone);
+        showMsg(r.message,r.status==='候補'?'wait':'success');
+        setTimeout(()=>openEvent(currentEventId),350);
       })
-      .withFailureHandler(err => { btn.disabled=false; btn.textContent='我要報名'; msg('signupMsg',err.message||err,'error'); })
-      .registerVolunteer({eventId:EVENT_ID,name,phone});
+      .withFailureHandler(err=>{
+        btn.disabled=false;
+        btn.textContent=currentEvent&&currentEvent.isFull?'我要候補':'我要報名';
+        showMsg(err.message||err,'error');
+      })
+      .registerVolunteer({eventId:currentEventId,name,phone});
   }
 
-  function showLookup(){ document.getElementById('signupCard').classList.add('hide'); document.getElementById('lookupCard').classList.remove('hide'); }
-  function hideLookup(){ document.getElementById('lookupCard').classList.add('hide'); document.getElementById('signupCard').classList.remove('hide'); }
+  function showLookup(){
+    document.getElementById('signupCard').classList.add('hide');
+    document.getElementById('lookupCard').classList.remove('hide');
+  }
+  function hideLookup(){
+    document.getElementById('lookupCard').classList.add('hide');
+    document.getElementById('signupCard').classList.remove('hide');
+  }
   function lookupMine(){
     const p=document.getElementById('lookupPhone').value.trim();
     if(!p) return alert('請輸入手機號碼。');
     currentPhone=p.replace(/\D/g,'');
-    load(currentPhone);
+    openEvent(currentEventId);
   }
-
-  function cancelMine() {
-    if (!confirm('確定要取消這場活動的報名嗎？')) return;
+  function cancelMine(){
+    if(!confirm('確定要取消這場活動的報名嗎？')) return;
     google.script.run
-      .withSuccessHandler(r => {
+      .withSuccessHandler(r=>{
         alert(r.message);
-        localStorage.removeItem('volunteer_phone_' + EVENT_ID);
-        currentPhone=''; load('');
+        localStorage.removeItem('volunteer_phone_'+currentEventId);
+        currentPhone='';
+        openEvent(currentEventId);
       })
-      .withFailureHandler(err => alert(err.message || err))
-      .cancelRegistration(EVENT_ID,currentPhone);
+      .withFailureHandler(err=>alert(err.message||err))
+      .cancelRegistration(currentEventId,currentPhone);
   }
 
-  function renderNames(id, list){
-    const el=document.getElementById(id); el.innerHTML='';
-    if(!list.length){ const d=document.createElement('div'); d.className='empty'; d.textContent='目前還沒有人報名'; el.appendChild(d); return; }
-    list.forEach(x=>{ const d=document.createElement('div'); d.className='person'; d.textContent=`${x.no}. ${x.name}`; el.appendChild(d); });
+  function renderNames(id,list){
+    const el=document.getElementById(id);el.innerHTML='';
+    if(!list.length){el.innerHTML='<div class="empty">目前還沒有人報名</div>';return;}
+    list.forEach(x=>{const d=document.createElement('div');d.className='person';d.textContent=x.no+'. '+x.name;el.appendChild(d);});
   }
-  function setOptional(rowId, valueId, value){ document.getElementById(rowId).classList.toggle('hide',!value); if(value) document.getElementById(valueId).textContent=value; }
-  function msg(id,text,type){ const el=document.getElementById(id); el.textContent=text; el.className='notice '+(type||''); }
-  function fatal(text){ document.getElementById('loading').classList.add('hide'); const f=document.getElementById('fatal'); f.textContent=text; f.classList.remove('hide'); }
-  function goBackToLine(){ if(history.length>1) history.back(); else window.close(); }
+  function setOptional(rowId,valueId,value){
+    document.getElementById(rowId).classList.toggle('hide',!value);
+    if(value) document.getElementById(valueId).textContent=value;
+  }
+  function showMsg(text,type){
+    const el=document.getElementById('signupMsg');
+    el.textContent=text;
+    el.className='notice '+(type||'');
+  }
+  function showError(err){
+    document.getElementById('loading').classList.add('hide');
+    const el=document.getElementById('error');
+    el.textContent=(err&&err.message)||err||'發生錯誤';
+    el.classList.remove('hide');
+  }
+  function esc(v){
+    return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+  }
 </script>
 </body>
 </html>

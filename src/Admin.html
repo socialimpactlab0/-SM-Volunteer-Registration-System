@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>管理後台</title>
+  <style>
+    :root{--green:#23894a;--light:#eef8f0;--line:#dfe8e1;--text:#182019;--muted:#69716a;--orange:#e36a13;--red:#c93b32}
+    *{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",Arial,sans-serif;background:#f5f7f5;color:var(--text)}
+    .login{max-width:420px;margin:13vh auto;background:#fff;border:1px solid var(--line);border-radius:18px;padding:28px;box-shadow:0 8px 30px rgba(0,0,0,.06)}
+    h1{color:#0d5f2f;margin:0 0 8px}.muted{color:var(--muted)} input,textarea,select{width:100%;padding:11px 12px;border:1px solid #cfd9d1;border-radius:9px;font-size:16px} textarea{min-height:80px;resize:vertical}
+    button{border:0;border-radius:9px;padding:11px 16px;font-weight:750;font-size:15px;cursor:pointer}.primary{background:var(--green);color:#fff}.outline{background:#fff;color:#156b37;border:1px solid var(--green)}.gray{background:#eef0ee;color:#374039}.danger{background:#fff2f1;color:var(--red);border:1px solid #e5aaa5}
+    .app{display:none;min-height:100vh}.top{background:#fff;border-bottom:1px solid var(--line);padding:20px 28px;display:flex;justify-content:space-between;gap:20px;align-items:center;position:sticky;top:0;z-index:5}.top h1{font-size:30px}.content{max-width:1180px;margin:0 auto;padding:24px}
+    .panel{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:22px}.panel-title{background:var(--light);padding:13px 16px;font-size:20px;font-weight:800;color:#145d32}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:760px}th,td{padding:13px 14px;border-bottom:1px solid #edf0ed;text-align:left}th{background:#fafbfa;color:#525a53;font-size:14px}.badge{display:inline-block;padding:5px 9px;border-radius:8px;font-weight:750;background:#eef0ee}.badge.open{background:#fff0df;color:#9a4e00}.badge.full{background:#e8f5eb;color:#12632f}.badge.ended{background:#ededed;color:#6a6a6a}.actions{display:flex;gap:8px;flex-wrap:wrap}.empty{padding:26px;text-align:center;color:var(--muted)}
+    dialog{border:0;border-radius:14px;padding:0;width:min(720px,94vw);box-shadow:0 20px 70px rgba(0,0,0,.22)}dialog::backdrop{background:rgba(0,0,0,.35)}.dlg-head{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;background:var(--light)}.dlg-body{padding:20px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field label{display:block;font-size:14px;color:#4e5750;margin-bottom:5px}.span2{grid-column:1/-1}.dlg-foot{display:flex;justify-content:flex-end;gap:10px;padding:0 20px 20px}.x{background:transparent;font-size:24px;padding:0 5px;color:#555}
+    .reg-list{max-height:60vh;overflow:auto}.reg-row{display:grid;grid-template-columns:1fr 1fr .8fr 1.3fr;gap:8px;padding:10px;border-bottom:1px solid #eee}.linebox{white-space:pre-wrap;background:#f7f9f7;border:1px solid var(--line);border-radius:10px;padding:15px;min-height:220px;font-family:inherit;font-size:16px;line-height:1.55}
+    .toast{position:fixed;right:20px;bottom:20px;background:#153e25;color:#fff;padding:12px 16px;border-radius:10px;display:none;z-index:20}
+    @media(max-width:700px){.top{padding:15px}.top h1{font-size:24px}.content{padding:14px}.grid{grid-template-columns:1fr}.span2{grid-column:auto}.reg-row{grid-template-columns:1fr}.top .muted{display:none}}
+  </style>
+</head>
+<body>
+  <div id="login" class="login">
+    <h1>管理後台</h1><p class="muted">管理員在這裡新增活動、看名單、修改活動</p>
+    <label>管理密碼</label><input id="pin" type="password" inputmode="numeric" placeholder="請輸入管理密碼" style="margin:8px 0 12px">
+    <button class="primary" style="width:100%" onclick="login()">登入</button>
+    <div id="loginMsg" class="muted" style="margin-top:10px"></div>
+  </div>
+
+  <div id="app" class="app">
+    <div class="top"><div><h1>管理後台</h1><div class="muted">新增活動、看名單、修改活動；過期活動自動顯示已結束</div></div><button class="primary" onclick="openEvent()">＋ 新增活動</button></div>
+    <div class="content">
+      <section class="panel"><div class="panel-title">進行中／未來活動</div><div class="table-wrap"><table><thead><tr><th>日期</th><th>活動</th><th>報名</th><th>狀態</th><th>操作</th></tr></thead><tbody id="activeBody"></tbody></table></div><div id="activeEmpty" class="empty" style="display:none">目前沒有活動</div></section>
+      <section class="panel"><div class="panel-title">已結束活動</div><div class="table-wrap"><table><thead><tr><th>日期</th><th>活動</th><th>報名</th><th>狀態</th><th>操作</th></tr></thead><tbody id="endedBody"></tbody></table></div><div id="endedEmpty" class="empty" style="display:none">目前沒有已結束活動</div></section>
+      <div class="muted">活動不刪除，時間到了會自動顯示「已結束」。</div>
+    </div>
+  </div>
+
+  <dialog id="eventDialog"><div class="dlg-head"><b id="eventDlgTitle">新增活動</b><button class="x" onclick="eventDialog.close()">×</button></div><div class="dlg-body"><div class="grid">
+    <input type="hidden" id="eventId">
+    <div class="field span2"><label>活動名稱 *</label><input id="eventName"></div>
+    <div class="field"><label>日期 *</label><input id="eventDate" type="date"></div>
+    <div class="field"><label>需求人數 *</label><input id="need" type="number" min="1" value="1"></div>
+    <div class="field"><label>集合時間</label><input id="meetTime" type="time"></div>
+    <div class="field"><label>活動開始</label><input id="startTime" type="time"></div>
+    <div class="field"><label>活動結束</label><input id="endTime" type="time"></div>
+    <div class="field"><label>狀態</label><select id="status"><option value="開放">開放</option><option value="關閉">關閉</option><option value="取消">取消</option></select></div>
+    <div class="field"><label>地點</label><input id="place"></div>
+    <div class="field"><label>接洽人</label><input id="contact"></div>
+    <div class="field span2"><label>地址</label><input id="address"></div>
+    <div class="field span2"><label>活動說明</label><textarea id="description"></textarea></div>
+  </div></div><div class="dlg-foot"><button class="gray" onclick="eventDialog.close()">取消</button><button class="primary" onclick="saveEvent()">儲存</button></div></dialog>
+
+  <dialog id="regDialog"><div class="dlg-head"><b id="regTitle">報名名單</b><button class="x" onclick="regDialog.close()">×</button></div><div class="dlg-body"><div class="reg-list" id="regList"></div></div><div class="dlg-foot"><button class="primary" onclick="regDialog.close()">關閉</button></div></dialog>
+
+  <dialog id="lineDialog"><div class="dlg-head"><b>LINE 公告文字</b><button class="x" onclick="lineDialog.close()">×</button></div><div class="dlg-body"><div class="linebox" id="lineText"></div></div><div class="dlg-foot"><button class="outline" onclick="copyLine()">複製文字</button><button class="primary" onclick="lineDialog.close()">完成</button></div></dialog>
+
+  <div id="toast" class="toast"></div>
+<script>
+  let ADMIN_PIN=''; let EVENTS=[];
+  const eventDialog=document.getElementById('eventDialog'),regDialog=document.getElementById('regDialog'),lineDialog=document.getElementById('lineDialog');
+
+  function login(){
+    const pin=document.getElementById('pin').value.trim(); if(!pin) return setLoginMsg('請輸入管理密碼。');
+    google.script.run.withSuccessHandler(ok=>{ if(!ok) return setLoginMsg('管理密碼錯誤。'); ADMIN_PIN=pin; sessionStorage.setItem('vol_admin_pin',pin); showApp(); }).withFailureHandler(e=>setLoginMsg(e.message||e)).checkAdmin(pin);
+  }
+  document.addEventListener('DOMContentLoaded',()=>{const p=sessionStorage.getItem('vol_admin_pin');if(p){document.getElementById('pin').value=p;google.script.run.withSuccessHandler(ok=>{if(ok){ADMIN_PIN=p;showApp();}}).checkAdmin(p);}});
+  function setLoginMsg(t){document.getElementById('loginMsg').textContent=t;}
+  function showApp(){document.getElementById('login').style.display='none';document.getElementById('app').style.display='block';refresh();}
+  function refresh(){google.script.run.withSuccessHandler(renderEvents).withFailureHandler(showErr).adminListEvents(ADMIN_PIN);}
+  function renderEvents(list){EVENTS=list||[];const active=EVENTS.filter(x=>x.status!=='已結束'),ended=EVENTS.filter(x=>x.status==='已結束');fillBody('activeBody','activeEmpty',active);fillBody('endedBody','endedEmpty',ended);}
+  function fillBody(bodyId,emptyId,list){const body=document.getElementById(bodyId);body.innerHTML='';document.getElementById(emptyId).style.display=list.length?'none':'block';list.forEach(e=>body.appendChild(eventRow(e)));}
+  function eventRow(e){
+    const tr=document.createElement('tr');
+    const badge=e.status==='已結束'?'<span class="badge ended">已結束</span>':(e.status!=='開放'?`<span class="badge ended">${esc(e.status)}</span>`:(e.isFull?'<span class="badge full">已額滿</span>':`<span class="badge open">尚缺 ${e.shortage} 人</span>`));
+    tr.innerHTML=`<td>${esc(e.dateText)}（${esc(e.weekday)}）</td><td><b>${esc(e.name)}</b></td><td>${e.positiveCount} / ${e.need}${e.waitCount?`<div class="muted">候補 ${e.waitCount}</div>`:''}</td><td>${badge}</td><td><div class="actions"><button class="outline" data-act="regs">查看名單</button><button class="outline" data-act="edit">修改</button><button class="gray" data-act="line">LINE公告</button></div></td>`;
+    tr.querySelector('[data-act="regs"]').onclick=()=>openRegs(e);
+    tr.querySelector('[data-act="edit"]').onclick=()=>openEvent(e);
+    tr.querySelector('[data-act="line"]').onclick=()=>openLine(e);
+    return tr;
+  }
+  function openEvent(e){
+    document.getElementById('eventDlgTitle').textContent=e?'修改活動':'新增活動';
+    const set=(id,v='')=>document.getElementById(id).value=v||'';
+    set('eventId',e&&e.eventId);set('eventName',e&&e.name);set('eventDate',e&&e.date);set('need',e&&e.need||1);set('meetTime',e&&e.meetTime);set('startTime',e&&e.startTime);set('endTime',e&&e.endTime);set('status',e&&e.manualStatus||'開放');set('place',e&&e.place);set('contact',e&&e.contact);set('address',e&&e.address);set('description',e&&e.description);
+    eventDialog.showModal();
+  }
+  function saveEvent(){
+    const g=id=>document.getElementById(id).value;
+    const p={eventId:g('eventId'),name:g('eventName'),date:g('eventDate'),need:g('need'),meetTime:g('meetTime'),startTime:g('startTime'),endTime:g('endTime'),status:g('status'),place:g('place'),contact:g('contact'),address:g('address'),description:g('description')};
+    google.script.run.withSuccessHandler(()=>{eventDialog.close();toast('活動已儲存');refresh();}).withFailureHandler(showErr).adminSaveEvent(ADMIN_PIN,p);
+  }
+  function openRegs(e){
+    document.getElementById('regTitle').textContent=`${e.dateText} ${e.name}－報名名單`;
+    document.getElementById('regList').innerHTML='<div class="empty">讀取中…</div>';regDialog.showModal();
+    google.script.run.withSuccessHandler(rows=>{const box=document.getElementById('regList');box.innerHTML='';if(!rows.length){box.innerHTML='<div class="empty">目前沒有報名資料</div>';return;}rows.forEach(r=>{const d=document.createElement('div');d.className='reg-row';d.innerHTML=`<b>${esc(r.name)}</b><span>${esc(r.phone)}</span><span>${esc(r.status)}</span><span>${esc(r.registeredAt)}</span>`;box.appendChild(d);});}).withFailureHandler(showErr).adminGetRegistrations(ADMIN_PIN,e.eventId);
+  }
+  function openLine(e){document.getElementById('lineText').textContent='產生中…';lineDialog.showModal();google.script.run.withSuccessHandler(r=>document.getElementById('lineText').textContent=r.message).withFailureHandler(showErr).adminGetLineMessage(ADMIN_PIN,e.eventId);}
+  function copyLine(){navigator.clipboard.writeText(document.getElementById('lineText').textContent).then(()=>toast('已複製 LINE 公告文字')).catch(()=>alert('無法自動複製，請手動選取文字。'));}
+  function toast(t){const el=document.getElementById('toast');el.textContent=t;el.style.display='block';setTimeout(()=>el.style.display='none',1800);}
+  function showErr(e){alert((e&&e.message)||e||'發生錯誤');}
+  function esc(v){return String(v??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));}
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "sm-volunteer-registration-system",
+  "version": "0.1.0",
+  "private": true,
+  "description": "2027 台南神韻義工活動報名系統 - Google Apps Script + clasp",
+  "devDependencies": {
+    "@google/clasp": "^3.4.1"
+  },
+  "scripts": {
+    "clasp:login": "clasp login",
+    "clasp:status": "clasp show-authorized-user",
+    "gas:push": "clasp push --force",
+    "gas:pull": "clasp pull",
+    "gas:open": "clasp open-script"
+  }
+}

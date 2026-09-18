@@ -1,0 +1,5 @@
+# Rules are evaluated relative to rootDir (src/)
+**/**
+!appsscript.json
+!**/*.gs
+!**/*.html

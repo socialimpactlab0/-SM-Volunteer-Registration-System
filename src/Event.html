@@ -158,9 +158,9 @@
     window.scrollTo({top:0,behavior:'smooth'});
   }
 
-  function openEvent(eventId) {
+  function openEvent(eventId, phoneOverride) {
     currentEventId = eventId;
-    currentPhone = localStorage.getItem('volunteer_phone_' + eventId) || '';
+    currentPhone = phoneOverride || localStorage.getItem('volunteer_phone_' + eventId) || '';
     document.getElementById('listView').classList.add('hide');
     document.getElementById('detailView').classList.add('hide');
     document.getElementById('loading').classList.remove('hide');

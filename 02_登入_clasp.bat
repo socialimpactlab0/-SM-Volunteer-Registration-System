@@ -4,62 +4,43 @@ cd /d "%~dp0"
 title CLASP Login
 
 echo ========================================
-echo 02 - Google CLASP Login
+echo 02 - Login to Google CLASP
 echo ========================================
-echo.
-echo Project folder:
-echo %CD%
 echo.
 
 where node >nul 2>nul
 if errorlevel 1 (
   echo [ERROR] Node.js was not found.
-  echo Please run 01_安裝_clasp.bat first and confirm Node.js is installed.
-  echo.
   pause
-  goto :end
+  exit /b 1
 )
-
-echo [OK] Node.js:
-node --version
-echo.
 
 if not exist "node_modules\.bin\clasp.cmd" (
-  echo [ERROR] node_modules\.bin\clasp.cmd was not found.
-  echo Please run 01_安裝_clasp.bat first.
-  echo.
+  echo [ERROR] CLASP is not installed in this folder.
+  echo Run step 01 first.
   pause
-  goto :end
+  exit /b 1
 )
 
-echo [OK] clasp found:
+echo [OK] CLASP:
 call "node_modules\.bin\clasp.cmd" --version
 echo.
-
-echo Browser login will start now.
-echo Please sign in to Google and approve access.
-echo Do NOT close this window.
+echo A browser window should open for Google authorization.
+echo Keep this console window open.
 echo.
+
 call "node_modules\.bin\clasp.cmd" login
-set "LOGIN_ERR=%ERRORLEVEL%"
-echo.
-
-if not "%LOGIN_ERR%"=="0" (
-  echo [ERROR] clasp login failed. Error code: %LOGIN_ERR%
+if errorlevel 1 (
   echo.
+  echo [ERROR] CLASP login failed.
   pause
-  goto :end
+  exit /b 1
 )
 
-echo ========================================
-echo Login completed.
-echo Current authorized Google account:
-echo ========================================
+echo.
+echo Authorized Google account:
 call "node_modules\.bin\clasp.cmd" show-authorized-user
 echo.
-echo You can now run 03_建立_GAS專案.bat
-echo.
+echo Login completed. Next: run step 03.
 pause
-
-:end
 endlocal

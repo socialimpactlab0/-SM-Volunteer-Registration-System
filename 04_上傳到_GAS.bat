@@ -1,23 +1,37 @@
 @echo off
-chcp 65001 >nul
+setlocal
 cd /d "%~dp0"
+title Push to GAS
+
 echo ========================================
-echo 04 將 GitHub/本機程式上傳到 GAS
+echo 04 - Push local source to Google Apps Script
 echo ========================================
-if not exist ".clasp.json" (
-  echo [錯誤] 找不到 .clasp.json。
-  echo 新專案請先執行 03_建立_GAS專案.bat。
-  echo 既有 GAS 專案請依 README 建立 .clasp.json。
-  pause
-  exit /b 1
-)
-call npx clasp push --force
-if errorlevel 1 (
-  echo [失敗] clasp push 未成功。
-  pause
-  exit /b 1
-)
 echo.
-echo [完成] 程式已上傳到 Google Apps Script。
-echo 可執行 05_開啟_GAS.bat 開啟專案。
+
+if not exist ".clasp.json" (
+  echo [ERROR] .clasp.json was not found.
+  echo Run step 03 first, or create .clasp.json for an existing GAS project.
+  pause
+  exit /b 1
+)
+
+if not exist "node_modules\.bin\clasp.cmd" (
+  echo [ERROR] CLASP is not installed.
+  echo Run step 01 first.
+  pause
+  exit /b 1
+)
+
+call "node_modules\.bin\clasp.cmd" push --force
+if errorlevel 1 (
+  echo.
+  echo [ERROR] CLASP push failed.
+  pause
+  exit /b 1
+)
+
+echo.
+echo [OK] Source code uploaded to GAS.
+echo Next: run step 05.
 pause
+endlocal

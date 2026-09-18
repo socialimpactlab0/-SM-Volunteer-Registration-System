@@ -2,7 +2,9 @@ const CONFIG = {
   TZ: 'Asia/Taipei',
   SHEET_EVENTS: '活動',
   SHEET_REGS: '報名',
-  DEFAULT_ADMIN_PIN: '2027'
+  DEFAULT_ADMIN_PIN: '2027',
+  PUBLIC_CACHE_KEY: 'PUBLIC_EVENTS_V2',
+  PUBLIC_CACHE_SECONDS: 30
 };
 
 const EVENT_HEADERS = [
@@ -77,47 +79,139 @@ function seedDemoData() {
   return '測試活動已建立。';
 }
 
+/**
+ * 建立一組完整模擬資料。
+ * 只會清除/重建 SIM_ 開頭的測試活動，不碰正式資料。
+ */
+function createSimulationData() {
+  setupSystem();
+  clearSimulationData();
+
+  const ss = getSS_();
+  const eventSh = ensureSheet_(ss, CONFIG.SHEET_EVENTS, EVENT_HEADERS);
+  const regSh = ensureSheet_(ss, CONFIG.SHEET_REGS, REG_HEADERS);
+  const now = new Date();
+
+  const dEnded = datePlus_(now, -1);
+  const dOne = datePlus_(now, 1);
+  const dFull = datePlus_(now, 3);
+  const dOpen = datePlus_(now, 7);
+
+  const events = [
+    ['SIM_ENDED', '【測試】昨日已結束活動', dEnded, '08:00', '08:30', '09:30', '測試地點 A', '', '測試窗口', 4, '用來確認活動時間到了會自動移到已結束。', '開放', now, now],
+    ['SIM_ONE', '【測試】北極殿健走', dOne, '05:30', '06:00', '07:00', '鹽埕北極殿廣場前', '台南市南區鹽埕路159巷1號', '榮琳', 5, '用來測試尚缺 1 人、報名後變額滿。', '開放', now, now],
+    ['SIM_FULL', '【測試】安平推廣', dFull, '08:30', '09:00', '11:00', '安平老街', '', '美慧', 3, '用來測試已額滿、候補、正取取消後候補自動轉正。', '開放', now, now],
+    ['SIM_OPEN', '【測試】茶會接待', dOpen, '13:00', '13:30', '16:30', '維悅酒店', '', '活動組', 6, '用來測試一般尚有多個名額的活動。', '開放', now, now]
+  ];
+  eventSh.getRange(eventSh.getLastRow() + 1, 1, events.length, EVENT_HEADERS.length).setValues(events);
+
+  const regs = [];
+  let seq = 1;
+  const addReg = function(eventId, name, phone, status, offsetSec) {
+    regs.push([
+      'SIMR' + String(seq++).padStart(3, '0'),
+      eventId,
+      name,
+      phone,
+      status,
+      new Date(now.getTime() + offsetSec * 1000),
+      ''
+    ]);
+  };
+
+  addReg('SIM_ONE', '測試晴美', '0900000001', '正取', 1);
+  addReg('SIM_ONE', '測試春梅', '0900000002', '正取', 2);
+  addReg('SIM_ONE', '測試秀芸', '0900000003', '正取', 3);
+  addReg('SIM_ONE', '測試鳳君', '0900000004', '正取', 4);
+
+  addReg('SIM_FULL', '測試志工A', '0900000011', '正取', 11);
+  addReg('SIM_FULL', '測試志工B', '0900000012', '正取', 12);
+  addReg('SIM_FULL', '測試志工C', '0900000013', '正取', 13);
+  addReg('SIM_FULL', '測試候補1', '0900000014', '候補', 14);
+  addReg('SIM_FULL', '測試候補2', '0900000015', '候補', 15);
+
+  addReg('SIM_OPEN', '測試接待A', '0900000021', '正取', 21);
+  addReg('SIM_ENDED', '測試歷史A', '0900000031', '正取', 31);
+  addReg('SIM_ENDED', '測試歷史B', '0900000032', '正取', 32);
+
+  regSh.getRange(regSh.getLastRow() + 1, 1, regs.length, REG_HEADERS.length).setValues(regs);
+  clearPublicCache_();
+
+  return [
+    '模擬資料建立完成。',
+    '1. 北極殿健走：4/5，尚缺 1 人。',
+    '2. 安平推廣：3/3，候補 2 人。',
+    '3. 茶會接待：1/6。',
+    '4. 昨日活動：應只出現在管理後台的已結束區。',
+    '測試手機可用 0900000001、0900000014 等。'
+  ].join('\n');
+}
+
+function clearSimulationData() {
+  const ss = getSS_();
+  const eventSh = ensureSheet_(ss, CONFIG.SHEET_EVENTS, EVENT_HEADERS);
+  const regSh = ensureSheet_(ss, CONFIG.SHEET_REGS, REG_HEADERS);
+
+  deleteRowsByPrefix_(regSh, REG_HEADERS.indexOf('活動ID') + 1, 'SIM_');
+  deleteRowsByPrefix_(eventSh, EVENT_HEADERS.indexOf('活動ID') + 1, 'SIM_');
+  clearPublicCache_();
+  return '模擬資料已清除。';
+}
+
+
 // =============================
 // 義工端 API
 // =============================
 
 function getPublicEvents() {
-  const sh = getSS_().getSheetByName(CONFIG.SHEET_EVENTS);
-  if (!sh) return [];
+  const cache = CacheService.getScriptCache();
+  const cached = cache.get(CONFIG.PUBLIC_CACHE_KEY);
+  if (cached) {
+    try { return JSON.parse(cached); } catch (e) {}
+  }
 
-  const events = sheetObjects_(sh, EVENT_HEADERS)
-    .map(ev => {
+  const events = getAllEvents_();
+  const regs = getAllRegs_();
+  const stats = buildRegistrationStats_(regs);
+
+  const result = events
+    .map(function(ev) {
       const status = computeEventStatus_(ev);
       if (status !== '開放') return null;
-
-      const regs = getActiveRegs_(ev['活動ID']);
-      const positive = regs.filter(r => r['報名狀態'] === '正取').length;
-      const wait = regs.filter(r => r['報名狀態'] === '候補').length;
-      return publicEvent_(ev, positive, wait, status);
+      const s = stats[ev['活動ID']] || { positive: 0, wait: 0 };
+      return publicEvent_(ev, s.positive, s.wait, status);
     })
-    .filter(Boolean);
+    .filter(Boolean)
+    .sort(function(a, b) {
+      return (a.date + a.startTime).localeCompare(b.date + b.startTime);
+    });
 
-  events.sort((a, b) => (a.date + a.startTime).localeCompare(b.date + b.startTime));
-  return events;
+  cache.put(CONFIG.PUBLIC_CACHE_KEY, JSON.stringify(result), CONFIG.PUBLIC_CACHE_SECONDS);
+  return result;
 }
 
 function getEventPageData(eventId, phone) {
-  const event = getEventById_(eventId);
+  const event = getAllEvents_().find(function(r) {
+    return String(r['活動ID']) === String(eventId);
+  });
   if (!event) return { ok: false, message: '找不到這個活動。' };
 
-  const activeRegs = getActiveRegs_(eventId);
-  const need = Number(event['需求人數'] || 0);
-  const positive = activeRegs.filter(r => r['報名狀態'] === '正取');
-  const waitlist = activeRegs.filter(r => r['報名狀態'] === '候補');
-
+  const normalizedPhone = phone ? normalizePhone_(phone) : '';
+  const activeRegs = getAllRegs_().filter(function(r) {
+    return r['活動ID'] === eventId && ['正取','候補'].includes(r['報名狀態']);
+  });
+  const positive = activeRegs.filter(function(r) { return r['報名狀態'] === '正取'; });
+  const waitlist = activeRegs.filter(function(r) { return r['報名狀態'] === '候補'; });
   const computedStatus = computeEventStatus_(event);
-  const my = phone ? findActiveRegByPhone_(eventId, normalizePhone_(phone)) : null;
+  const my = normalizedPhone
+    ? activeRegs.find(function(r) { return normalizePhone_(r['電話']) === normalizedPhone; }) || null
+    : null;
 
   return {
     ok: true,
     event: publicEvent_(event, positive.length, waitlist.length, computedStatus),
-    roster: positive.map((r, i) => ({ no: i + 1, name: r['姓名'] })),
-    waitlist: waitlist.map((r, i) => ({ no: i + 1, name: r['姓名'] })),
+    roster: positive.map(function(r, i) { return { no: i + 1, name: r['姓名'] }; }),
+    waitlist: waitlist.map(function(r, i) { return { no: i + 1, name: r['姓名'] }; }),
     my: my ? {
       regId: my['報名ID'],
       name: my['姓名'],
@@ -139,7 +233,9 @@ function registerVolunteer(payload) {
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
   try {
-    const event = getEventById_(eventId);
+    const event = getAllEvents_().find(function(r) {
+      return String(r['活動ID']) === eventId;
+    });
     if (!event) throw new Error('找不到這個活動。');
 
     const status = computeEventStatus_(event);
@@ -147,30 +243,38 @@ function registerVolunteer(payload) {
       throw new Error(status === '已結束' ? '這個活動已經結束。' : '目前沒有開放報名。');
     }
 
-    const existing = findActiveRegByPhone_(eventId, phone);
+    const allRegs = getAllRegs_();
+    const active = allRegs.filter(function(r) {
+      return r['活動ID'] === eventId && ['正取','候補'].includes(r['報名狀態']);
+    });
+    const existing = active.find(function(r) {
+      return normalizePhone_(r['電話']) === phone;
+    });
     if (existing) {
       return {
         ok: true,
         alreadyRegistered: true,
         regId: existing['報名ID'],
         status: existing['報名狀態'],
-        message: `你已經是${existing['報名狀態']}，不需要重複報名。`
+        message: '你已經是' + existing['報名狀態'] + '，不需要重複報名。'
       };
     }
 
-    const active = getActiveRegs_(eventId);
-    const positiveCount = active.filter(r => r['報名狀態'] === '正取').length;
+    const positiveCount = active.reduce(function(n, r) {
+      return n + (r['報名狀態'] === '正取' ? 1 : 0);
+    }, 0);
     const need = Number(event['需求人數'] || 0);
     const regStatus = positiveCount < need ? '正取' : '候補';
 
     const sh = getSS_().getSheetByName(CONFIG.SHEET_REGS);
     const regId = 'R' + Utilities.getUuid().replace(/-/g, '').slice(0, 12).toUpperCase();
     sh.appendRow([regId, eventId, name, phone, regStatus, new Date(), '']);
+    clearPublicCache_();
 
     return {
       ok: true,
       alreadyRegistered: false,
-      regId,
+      regId: regId,
       status: regStatus,
       message: regStatus === '正取' ? '報名成功。' : '活動已額滿，已加入候補。'
     };
@@ -189,17 +293,31 @@ function cancelRegistration(eventId, phone) {
   try {
     const sh = getSS_().getSheetByName(CONFIG.SHEET_REGS);
     const rows = sheetObjects_(sh, REG_HEADERS);
-    const target = rows.find(r => r['活動ID'] === eventId && normalizePhone_(r['電話']) === phone && ['正取','候補'].includes(r['報名狀態']));
+    const target = rows.find(function(r) {
+      return r['活動ID'] === eventId &&
+        normalizePhone_(r['電話']) === phone &&
+        ['正取','候補'].includes(r['報名狀態']);
+    });
     if (!target) throw new Error('查不到目前有效的報名紀錄。');
 
-    const row = target.__row;
-    sh.getRange(row, REG_HEADERS.indexOf('報名狀態') + 1).setValue('已取消');
-    sh.getRange(row, REG_HEADERS.indexOf('取消時間') + 1).setValue(new Date());
+    sh.getRange(target.__row, REG_HEADERS.indexOf('報名狀態') + 1).setValue('已取消');
+    sh.getRange(target.__row, REG_HEADERS.indexOf('取消時間') + 1).setValue(new Date());
 
     if (target['報名狀態'] === '正取') {
-      promoteFirstWaitlist_(eventId);
+      const firstWait = rows
+        .filter(function(r) {
+          return r['活動ID'] === eventId && r['報名狀態'] === '候補';
+        })
+        .sort(function(a, b) {
+          return toTime_(a['報名時間']) - toTime_(b['報名時間']);
+        })[0];
+
+      if (firstWait) {
+        sh.getRange(firstWait.__row, REG_HEADERS.indexOf('報名狀態') + 1).setValue('正取');
+      }
     }
 
+    clearPublicCache_();
     return { ok: true, message: '已取消報名，名額已更新。' };
   } finally {
     lock.releaseLock();
@@ -216,17 +334,18 @@ function checkAdmin(pin) {
 
 function adminListEvents(pin) {
   requireAdmin_(pin);
-  const sh = getSS_().getSheetByName(CONFIG.SHEET_EVENTS);
-  const events = sheetObjects_(sh, EVENT_HEADERS);
-  const result = events.map(ev => {
-    const regs = getActiveRegs_(ev['活動ID']);
-    const positive = regs.filter(r => r['報名狀態'] === '正取').length;
-    const wait = regs.filter(r => r['報名狀態'] === '候補').length;
-    const st = computeEventStatus_(ev);
-    return publicEvent_(ev, positive, wait, st);
+
+  const events = getAllEvents_();
+  const stats = buildRegistrationStats_(getAllRegs_());
+
+  const result = events.map(function(ev) {
+    const s = stats[ev['活動ID']] || { positive: 0, wait: 0 };
+    return publicEvent_(ev, s.positive, s.wait, computeEventStatus_(ev));
   });
 
-  result.sort((a, b) => (a.date + a.startTime).localeCompare(b.date + b.startTime));
+  result.sort(function(a, b) {
+    return (a.date + a.startTime).localeCompare(b.date + b.startTime);
+  });
   return result;
 }
 
@@ -278,7 +397,8 @@ function adminSaveEvent(pin, payload) {
     ]);
   }
 
-  return { ok: true, eventId };
+  clearPublicCache_();
+  return { ok: true, eventId: eventId };
 }
 
 function adminGetEvent(pin, eventId) {
@@ -338,6 +458,48 @@ function adminGetLineMessage(pin, eventId) {
 // =============================
 // 內部工具
 // =============================
+
+function getAllEvents_() {
+  const sh = getSS_().getSheetByName(CONFIG.SHEET_EVENTS);
+  return sh ? sheetObjects_(sh, EVENT_HEADERS) : [];
+}
+
+function getAllRegs_() {
+  const sh = getSS_().getSheetByName(CONFIG.SHEET_REGS);
+  return sh ? sheetObjects_(sh, REG_HEADERS) : [];
+}
+
+function buildRegistrationStats_(rows) {
+  const stats = Object.create(null);
+  rows.forEach(function(r) {
+    const id = r['活動ID'];
+    if (!id || !['正取','候補'].includes(r['報名狀態'])) return;
+    if (!stats[id]) stats[id] = { positive: 0, wait: 0 };
+    if (r['報名狀態'] === '正取') stats[id].positive++;
+    else stats[id].wait++;
+  });
+  return stats;
+}
+
+function clearPublicCache_() {
+  CacheService.getScriptCache().remove(CONFIG.PUBLIC_CACHE_KEY);
+}
+
+function datePlus_(baseDate, days) {
+  const d = new Date(baseDate.getTime());
+  d.setDate(d.getDate() + days);
+  return Utilities.formatDate(d, CONFIG.TZ, 'yyyy-MM-dd');
+}
+
+function deleteRowsByPrefix_(sheet, column, prefix) {
+  if (!sheet || sheet.getLastRow() < 2) return;
+  const values = sheet.getRange(2, column, sheet.getLastRow() - 1, 1).getDisplayValues();
+  for (let i = values.length - 1; i >= 0; i--) {
+    if (String(values[i][0]).indexOf(prefix) === 0) {
+      sheet.deleteRow(i + 2);
+    }
+  }
+}
 
 function getSS_() {
   const props = PropertiesService.getScriptProperties();

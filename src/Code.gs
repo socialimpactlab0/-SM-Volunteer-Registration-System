@@ -26,7 +26,7 @@ function doGet(e) {
   const tpl = HtmlService.createTemplateFromFile('Event');
   tpl.eventId = params.event || '';
   return tpl.evaluate()
-    .setTitle('志工活動報名')
+    .setTitle('義工活動')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
@@ -80,6 +80,26 @@ function seedDemoData() {
 // =============================
 // 義工端 API
 // =============================
+
+function getPublicEvents() {
+  const sh = getSS_().getSheetByName(CONFIG.SHEET_EVENTS);
+  if (!sh) return [];
+
+  const events = sheetObjects_(sh, EVENT_HEADERS)
+    .map(ev => {
+      const status = computeEventStatus_(ev);
+      if (status !== '開放') return null;
+
+      const regs = getActiveRegs_(ev['活動ID']);
+      const positive = regs.filter(r => r['報名狀態'] === '正取').length;
+      const wait = regs.filter(r => r['報名狀態'] === '候補').length;
+      return publicEvent_(ev, positive, wait, status);
+    })
+    .filter(Boolean);
+
+  events.sort((a, b) => (a.date + a.startTime).localeCompare(b.date + b.startTime));
+  return events;
+}
 
 function getEventPageData(eventId, phone) {
   const event = getEventById_(eventId);

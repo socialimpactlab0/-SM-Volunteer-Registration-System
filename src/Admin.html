@@ -98,7 +98,7 @@
   function copyLine(){navigator.clipboard.writeText(document.getElementById('lineText').textContent).then(()=>toast('已複製 LINE 公告文字')).catch(()=>alert('無法自動複製，請手動選取文字。'));}
   function toast(t){const el=document.getElementById('toast');el.textContent=t;el.style.display='block';setTimeout(()=>el.style.display='none',1800);}
   function showErr(e){alert((e&&e.message)||e||'發生錯誤');}
-  function esc(v){return String(v??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));}
+  function esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
 </script>
 </body>
 </html>
